@@ -1,0 +1,92 @@
+<div id="board">
+<% for i in 1..3 %>
+  <div class="row">
+  <% for j in 1..3 %>
+    <% unless @moves == nil%>
+      <% @moves.each do |m| %>
+        <% if m.x == i && m.y == j%>
+          <% if m.user.id == @game.player1.id %>
+            <div class="gbox col-md-4 col-xs-4" data-x="<%=i%>" data-y="<%=j%>">
+              <img id="img2" src="/image/o.jpg">
+            </div>
+          <% else %>
+            <div class="gbox col-md-4 col-xs-4" data-x="<%=i%>" data-y="<%=j%>">
+              <img id="img" src="/image/x.jpg">
+            </div>
+          <% end %>
+        <% else %>
+          <div class="valid_move gbox col-md-4 col-xs-4" data-x="<%=i%>" data-y="<%=j%>">
+          </div>
+        <% end %>
+      <% end %>
+    <% else %>
+      <div class="valid_move gbox  col-md-4 col-xs-4" data-x="<%=i%>" data-y="<%=j%>">
+        </div>
+    <% end %>
+  <% end %>
+  </div>
+<% end %>
+</div>
+
+<% if User.find(session[:user_id]).myturn?(@game.id) %>
+  <% if User.find(session[:user_id]).isHost?(@game.id) %>
+    <script>
+    alert('YOUR TURN!');
+    $(document).on('click', '.valid_move', function() {
+      alert("valid clicked");
+      $(this).html("<img id='img2' src='/image/o.jpg'>");
+      var x = $(this).data("x");
+      var y = $(this).data("y");
+      var hash = {}
+      hash["X"] = x
+      hash["Y"] = y
+      $.ajax({
+        url: '/game/play/<%=@game.id%>/play',
+        type: 'POST',
+        data: hash
+      });
+
+    });
+    </script>
+  <% else %>
+    <script>
+    alert('YOUR TURN!');
+    $(document).on('click', '.valid_move', function() {
+      alert("valid clicked");
+      $(this).html("<img id='img2' src='/image/o.jpg'>");
+      var x = $(this).data("x");
+      var y = $(this).data("y");
+      var hash = {}
+      hash["X"] = x
+      hash["Y"] = y
+      $.ajax({
+        url: '/game/play/<%=@game.id%>/play',
+        type: 'POST',
+        dataType: 'json',
+        data: hash,
+        success: function(data){
+          $("#board").html(data);
+          console.log(data);
+        }
+      });
+    });
+    </script>
+  <% end %>
+
+  <% else %>
+
+  <script>
+    $(document).ready(function(){
+      setInterval(function(){
+        console.log("================polling")
+        $.ajax({
+          url: '/game/play/<%=@game.id%>/move',
+          type: "GET",
+          success: function(data){
+            $(this).html(data);
+          }
+        });
+      }, 3000);
+    });
+  </script>
+<% end %>
